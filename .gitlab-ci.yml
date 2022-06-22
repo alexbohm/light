@@ -1,3 +1,7 @@
+
+variables:
+  CARGO_HOME: $CI_PROJECT_DIR/cargo
+
 stages:
   - lint
   - build
@@ -8,6 +12,10 @@ lint:
   script:
     - rustup component add rustfmt
     - cargo fmt -- --check
+  cache:
+    paths:
+      - cargo
+      - target
 
 rust-latest:
   stage: build
@@ -15,11 +23,20 @@ rust-latest:
   script:
     - rustup target add thumbv7em-none-eabihf
     - cargo build --verbose
+  cache:
+    paths:
+      - cargo
+      - target
 
 rust-nightly:
   stage: build
   image: rustlang/rust:nightly
+  allow_failure: true
   script:
     - rustup target add thumbv7em-none-eabihf
     - cargo build --verbose
-  allow_failure: true
+  cache:
+    key: nightly-cache
+    paths:
+      - cargo
+      - target
