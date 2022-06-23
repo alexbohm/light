@@ -27,19 +27,20 @@ mod app {
     fn init(mut ctx: init::Context) -> (Shared, Local, init::Monotonics) {
         let mut syscfg = ctx.device.SYSCFG.constrain();
 
-        // Configure the clocks for the device. STM CubeMX was used to solve for the appropriate
-        // values. The sysclk is not at the maximum because if we want to use the USB or SDIO
-        // module, we need the pll48clk. The pll48clk limits the sysclk because there are not enough
-        // ways to multiply/divide clocks to get the appropriate values.
+        // Configure the clocks for the device. STM32CubeMX is very helpful for visualizing these values.
         let rcc = ctx.device.RCC.constrain();
         let _clocks = rcc
             .cfgr
+            // The Black Pill board has a 25 MHz high speed external (HSE) crystal.
             .use_hse(25.MHz())
             .require_pll48clk()
-            .sysclk(60.MHz())
-            .hclk(60.MHz())
-            .pclk1(30.MHz())
-            .pclk2(60.MHz())
+            // Set sysclk to maximum of 100Mhz
+            .sysclk(100.MHz())
+            .hclk(100.MHz())
+            // Set pclk1 to maximum of 50Mhz.
+            .pclk1(50.MHz())
+            // Set pclk2 to maximum of 100Mhz.
+            .pclk2(100.MHz())
             .freeze();
 
         // Initialize the GPIO blocks.
@@ -72,6 +73,8 @@ mod app {
 
     #[idle]
     fn idle(_ctx: idle::Context) -> ! {
+        // TODO: Loop for now. Eventually this should put the hardware to sleep to conserve power.
+        #[allow(clippy::empty_loop)]
         loop {}
     }
     /// Handle interrupts for the onboard button.
