@@ -1,12 +1,14 @@
+use defmt::Format;
 use stm32f4xx_hal::{pac::TIM2, prelude::*, timer::Counter};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Format, Clone, Copy)]
 pub enum LightState {
     On,
     FadeOff,
     Off,
     FadeOn,
 }
+
 const FADE_OFF_DELAY: u32 = 10 * 1000;
 const FADE_ON_DELAY: u32 = 1 * 1000;
 const TIMEOUT_DELAY: u32 = 5 * 60 * 1000;
@@ -54,7 +56,7 @@ impl LightStateMachine {
                 self.fade_timer.cancel().unwrap();
             }
         }
-
+        defmt::info!("Transitioning to state: {}", new_state);
         self.state = new_state;
     }
 

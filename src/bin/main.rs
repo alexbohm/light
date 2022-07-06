@@ -3,13 +3,14 @@
 #![no_std]
 #![no_main]
 
+use defmt_rtt as _;
 use panic_halt as _;
 
-mod state_machine;
+use light as _;
 
 #[rtic::app(device = stm32f4xx_hal::pac)]
 mod app {
-    use crate::state_machine::LightStateMachine;
+    use light::state_machine::LightStateMachine;
     use stm32f4xx_hal::{
         dma::{
             config::DmaConfig, traits::StreamISR, MemoryToPeripheral, Stream2, StreamsTuple,
@@ -162,6 +163,7 @@ mod app {
     /// Arm Documentation
     /// https://developer.arm.com/documentation/ddi0439/b/Nested-Vectored-Interrupt-Controller/NVIC-functional-description/Low-power-modes
     fn cpu_sleep_mode() {
+        #[cfg(not(debug_assertions))]
         cortex_m::asm::wfi();
     }
 
@@ -247,5 +249,19 @@ mod app {
             result
         });
         *ctx.local.on_deck_tx_buffer = Some(old_buffer);
+    }
+}
+
+// defmt-test 0.3.0 has the limitation that this `#[tests]` attribute can only be used
+// once within a crate. the module can be in any file but there can only be at most
+// one `#[tests]` module in this library crate
+#[cfg(test)]
+#[defmt_test::tests]
+mod unit_tests {
+    use defmt::assert;
+
+    #[test]
+    fn it_works() {
+        assert!(true)
     }
 }
